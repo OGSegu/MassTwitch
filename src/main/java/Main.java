@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 public class Main {
     public static void main(String[] args) {
         Checker checker;
@@ -12,5 +10,6 @@ public class Main {
         else {
             throw new IllegalArgumentException("Пример: checker 'url'");
         }
+        checker.start();
     }
 }

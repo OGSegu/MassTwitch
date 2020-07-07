@@ -1,12 +1,22 @@
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Checker {
     private final File file;
     private final File resultFile;
+    private final StringBuilder sbResult = new StringBuilder();
 
     public Checker(String fileURL) {
         file = getCustomFile(fileURL);
@@ -52,35 +62,69 @@ public class Checker {
         }
     }
 
-
-
-
     public void start() {
         try (Scanner sc = new Scanner(file, "UTF-8")) {
             while (sc.hasNext()) {
                 String token = sc.next();
-                boolean result = checkToken(token);
-                System.out.println( token + " / " + result);
+                boolean result = getTokenInformation(token);
+                output(token, result);
             }
         } catch (FileNotFoundException e) {
             System.out.println("Файл не найден: " + e);
         }
+        writeToFile();
     }
 
-    private boolean checkToken(String token) {
-        boolean result = false;
-
-        if (result) {
-            writeToFile(token);
+    private boolean getTokenInformation(String token) {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://id.twitch.tv/oauth2/validate"))
+                .setHeader("Authorization" ," Bearer " + token)
+                .build();
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
-        return result;
+        JSONObject jsonObject = new JSONObject(response.body());
+        String clientId = (String) jsonObject.get("client_id");
+        String userId = (String) jsonObject.get("user_id");
+//        sendFollow(token, clientId, userId);
+        return response.body().contains("client_id");
     }
 
-    private void writeToFile(String token) {
-        try (FileWriter fileWriter = new FileWriter(resultFile)) {
-            fileWriter.write(token);
+    private void writeToFile() {
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter(resultFile);
+            fileWriter.write(sbResult.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private void output(String token, boolean result) {
+        System.out.println( token + " / " + result);
+        sbResult.append(token);
+    }
+
+//    public void sendFollow(String token, String clientId, String userId) {
+//        HttpClient client = HttpClient.newHttpClient();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create("https://api.twitch.tv/helix/users/follows"))
+//                .setHeader("Authorization" ," Bearer " + token)
+//                .setHeader("Client-ID", clientId)
+//                .setHeader("Content-Type", "application/json")
+//                .build();
+//        HttpResponse<String> response = null;
+//        try {
+//            response = client.send(request,
+//                    HttpResponse.BodyHandlers.ofString());
+//        } catch (IOException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(response.body());
+//    }
 }
