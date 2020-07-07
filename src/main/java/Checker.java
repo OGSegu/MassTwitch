@@ -1,5 +1,3 @@
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -10,7 +8,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.Scanner;
 
 public class Checker {
@@ -91,6 +88,7 @@ public class Checker {
         JSONObject jsonObject = new JSONObject(response.body());
         String clientId = (String) jsonObject.get("client_id");
         String userId = (String) jsonObject.get("user_id");
+        System.out.println(token + ":" + clientId + ":" + userId);
 //        sendFollow(token, clientId, userId);
         return response.body().contains("client_id");
     }
