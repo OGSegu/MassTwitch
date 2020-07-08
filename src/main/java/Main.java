@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 
 public class Main {
@@ -11,7 +12,6 @@ public class Main {
             if (args[1] == null) throw new IllegalArgumentException("Enter channel");
             if (args[1].toLowerCase().isEmpty()) throw new IllegalArgumentException("Wrong channel");
             followSender = new FollowSender(args[1]);
-            //followSender.start();
         } else if (args[0].toLowerCase().equals("check")) {
             checker = new Checker();
             checker.start();

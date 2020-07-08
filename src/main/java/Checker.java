@@ -80,8 +80,6 @@ public class Checker {
         JSONObject jsonObject = new JSONObject(response.body());
         String clientId = (String) jsonObject.get("client_id");
         String userId = (String) jsonObject.get("user_id");
-        System.out.println(token + ":" + clientId + ":" + userId);
-
         boolean result = response.body().contains("client_id");
         output(token, clientId, userId, result);
     }
