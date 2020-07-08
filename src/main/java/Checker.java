@@ -11,48 +11,17 @@ import java.net.http.HttpResponse;
 import java.util.Scanner;
 
 public class Checker {
-    private final File file;
-    private final File resultFile;
     private final StringBuilder sbResult = new StringBuilder();
     private final FileWriter fileWriter;
 
 
     public Checker() throws IOException {
-        file = getDefaultFile();
-        resultFile = getResultFile();
-        fileWriter = new FileWriter(resultFile);
+        fileWriter = new FileWriter(FileCreator.resultFile, false);
     }
 
-    private File getDefaultFile() {
-        File file = new File("tokens.txt");
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            System.out.println("Файл не может быть создан");
-        }
-        checkFile(file);
-        return file;
-    }
-
-    private File getResultFile() {
-        File resultFile = new File("valid.txt");
-        try {
-            resultFile.createNewFile();
-        } catch (IOException e) {
-            System.out.println("Файл не может быть создан");
-        }
-        checkFile(resultFile);
-        return resultFile;
-    }
-
-    private void checkFile(File file) {
-        if (!file.exists() || !file.isFile() || !file.getAbsolutePath().endsWith(".txt")) {
-            throw new IllegalArgumentException("Неверный файл.");
-        }
-    }
 
     public void start() throws IOException {
-        try (Scanner sc = new Scanner(file, "UTF-8")) {
+        try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
             while (sc.hasNext()) {
                 String token = sc.next();
                 getTokenInformation(token);
@@ -77,24 +46,50 @@ public class Checker {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        if (!response.body().contains("client_id")) {
+            System.out.println(token + " : " + "Invalid");
+            return;
+        }
         JSONObject jsonObject = new JSONObject(response.body());
         String clientId = (String) jsonObject.get("client_id");
         String userId = (String) jsonObject.get("user_id");
-        boolean result = response.body().contains("client_id");
-        output(token, clientId, userId, result);
+        System.out.println(token + " : " + "Valid");
+        output(token, clientId, userId);
+        checkFollowers(token, clientId);
+    }
+
+    private int checkFollowers(String token, String clientId) {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.twitch.tv/kraken/channel"))
+                .setHeader("Authorization" ," OAuth " + token)
+                .setHeader("Client-ID", clientId)
+                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
+                .build();
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        JSONObject jsonObject = new JSONObject(response.body());
+        System.out.println(jsonObject.toString());
+        //System.out.println(jsonObject.getInt("followers"));
+        return 12;
     }
 
     private void writeToFile() {
         try {
             fileWriter.write(sbResult.toString());
             fileWriter.flush();
+            sbResult.setLength(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void output(String token, String clientId, String userId, boolean result) {
-        System.out.println( token + " / " + result);
+    private void output(String token, String clientId, String userId) {
         sbResult.append(token)
                 .append(":")
                 .append(clientId)
