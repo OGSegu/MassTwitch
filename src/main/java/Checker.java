@@ -14,21 +14,13 @@ public class Checker {
     private final File file;
     private final File resultFile;
     private final StringBuilder sbResult = new StringBuilder();
+    private final FileWriter fileWriter;
 
-    public Checker(String fileURL) {
-        file = getCustomFile(fileURL);
-        resultFile = getResultFile();
-    }
 
-    public Checker() {
+    public Checker() throws IOException {
         file = getDefaultFile();
         resultFile = getResultFile();
-    }
-
-    private File getCustomFile(String fileURL) {
-        File file = new File(fileURL);
-        checkFile(file);
-        return file;
+        fileWriter = new FileWriter(resultFile);
     }
 
     private File getDefaultFile() {
@@ -59,20 +51,20 @@ public class Checker {
         }
     }
 
-    public void start() {
+    public void start() throws IOException {
         try (Scanner sc = new Scanner(file, "UTF-8")) {
             while (sc.hasNext()) {
                 String token = sc.next();
-                boolean result = getTokenInformation(token);
-                output(token, result);
+                getTokenInformation(token);
             }
         } catch (FileNotFoundException e) {
             System.out.println("Файл не найден: " + e);
         }
-        writeToFile();
+        fileWriter.flush();
     }
 
-    private boolean getTokenInformation(String token) {
+
+    private void getTokenInformation(String token) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://id.twitch.tv/oauth2/validate"))
@@ -89,40 +81,29 @@ public class Checker {
         String clientId = (String) jsonObject.get("client_id");
         String userId = (String) jsonObject.get("user_id");
         System.out.println(token + ":" + clientId + ":" + userId);
-//        sendFollow(token, clientId, userId);
-        return response.body().contains("client_id");
+
+        boolean result = response.body().contains("client_id");
+        output(token, clientId, userId, result);
     }
 
     private void writeToFile() {
-        FileWriter fileWriter;
         try {
-            fileWriter = new FileWriter(resultFile);
             fileWriter.write(sbResult.toString());
+            fileWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void output(String token, boolean result) {
+    private void output(String token, String clientId, String userId, boolean result) {
         System.out.println( token + " / " + result);
-        sbResult.append(token);
+        sbResult.append(token)
+                .append(":")
+                .append(clientId)
+                .append(":")
+                .append(userId)
+                .append("\n");
+        writeToFile();
     }
 
-//    public void sendFollow(String token, String clientId, String userId) {
-//        HttpClient client = HttpClient.newHttpClient();
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create("https://api.twitch.tv/helix/users/follows"))
-//                .setHeader("Authorization" ," Bearer " + token)
-//                .setHeader("Client-ID", clientId)
-//                .setHeader("Content-Type", "application/json")
-//                .build();
-//        HttpResponse<String> response = null;
-//        try {
-//            response = client.send(request,
-//                    HttpResponse.BodyHandlers.ofString());
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println(response.body());
-//    }
 }
