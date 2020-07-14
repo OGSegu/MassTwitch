@@ -1,3 +1,6 @@
+package twitch;
+
+import twitch.io.FileCreator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -44,7 +47,11 @@ public class FollowSender {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(response.body());
+        if (response.body().contains("Unprocessable Entity")) {
+            System.out.println(response.body());
+            return false;
+        }
+        System.out.println(userId + ": followed");
         return true;
     }
 

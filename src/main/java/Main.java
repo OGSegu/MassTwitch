@@ -1,3 +1,7 @@
+import twitch.io.FileCreator;
+import twitch.Checker;
+import twitch.FollowSender;
+
 import java.io.IOException;
 
 public class Main {
@@ -5,6 +9,7 @@ public class Main {
         FileCreator.create();
         Checker checker;
         FollowSender followSender;
+
         if (args.length > 2 || args.length == 0) {
             throw new IllegalArgumentException("Wrong arguments");
         }
