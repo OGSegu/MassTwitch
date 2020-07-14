@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class FollowSender {
-    private final long channelID;
+    private final String channelID;
     private final int amount;
 
     /**
@@ -55,6 +55,10 @@ public class FollowSender {
      * @return - true if successful
      */
     private boolean follow(TwitchUser user) {
+        if (user.isFollowedTo(channelID)) {
+            System.out.println(user.getLogin() + " is already followed. Skipped.");
+            return false;
+        }
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .PUT(HttpRequest.BodyPublishers.noBody())
@@ -83,7 +87,7 @@ public class FollowSender {
      * @param channelName - channel name
      * @return - channelID
      */
-    private long getChannelID(String channelName) {
+    private String getChannelID(String channelName) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitch.tv/kraken/users?login=" + channelName))
@@ -99,10 +103,10 @@ public class FollowSender {
         }
         JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
         JSONArray userInfo = jsonObject.getJSONArray("users");
-        long channelId = 0;
+        String channelId = null;
         for (int i = 0; i < userInfo.length(); i++) {
             JSONObject info = userInfo.getJSONObject(i);
-            channelId = info.getLong("_id");
+            channelId = info.getString("_id");
         }
         return channelId;
     }

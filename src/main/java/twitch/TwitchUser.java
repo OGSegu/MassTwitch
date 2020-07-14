@@ -93,6 +93,7 @@ public class TwitchUser {
 
     /**
      * Get JSON of followed API result.
+     *
      * @return JSONObject after API request.
      */
     private JSONObject getFollowedJSON() {
@@ -114,10 +115,34 @@ public class TwitchUser {
 
     /**
      * Check if TwitchUser can follow
+     *
      * @return true - if can follow
      */
     public boolean canFollow() {
         return getFollowed() < 2000;
+    }
+
+    /**
+     * Check if user is followed to "channelID"
+     * @param channelID - channel to check
+     * @return true - if followed
+     */
+    public boolean isFollowedTo(String channelID) {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.twitch.tv/kraken/users/" + getUserID() + "/follows/channels/" + channelID + "/follows/channels/"))
+                .setHeader("Authorization", " OAuth " + getToken())
+                .setHeader("Client-ID", getClientID())
+                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
+                .build();
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return Objects.requireNonNull(response).body().contains("is not following");
     }
 
     /**
@@ -152,6 +177,7 @@ public class TwitchUser {
 
     /**
      * Unfollow from specific amount of users
+     *
      * @param amount - amount to unfollow
      */
     public void clean(int amount) {
@@ -183,6 +209,7 @@ public class TwitchUser {
 
     /**
      * Unfollow from specific user
+     *
      * @param channelID - channelID of this user
      * @return true - successful
      */
