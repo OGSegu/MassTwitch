@@ -13,16 +13,16 @@ public class Checker {
     private final FileWriter fileWriter;
 
     /**
-     * Конструктор класса Twitch_Checker.Checker
-     * @throws IOException
+     * Constructor of Checker class
+     * @throws IOException - when creation of FileWriter is failed
      */
     public Checker() throws IOException {
         fileWriter = new FileWriter(FileCreator.resultFile, false);
     }
 
     /**
-     * Метод запускающий чекер.
-     * @throws IOException
+     * The Method runs checker.
+     * @throws IOException - when creation of FileWriter is failed
      */
     public void start() throws IOException {
         try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
@@ -33,37 +33,16 @@ public class Checker {
                 output(token);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Файл не найден: " + e);
-        } catch (InvalidAccount ignored) {
+            System.out.println("File not found " + e);
+        } catch (InvalidAccount e) {
+            System.out.println("Invalid token: " + e);
         }
         fileWriter.flush();
     }
 
 
-
-//    private int checkFollowers(String token, String clientId) {
-//        HttpClient client = HttpClient.newHttpClient();
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create("https://api.twitch.tv/kraken/channel"))
-//                .setHeader("Authorization" ," OAuth " + token)
-//                .setHeader("Client-ID", clientId)
-//                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
-//                .build();
-//        HttpResponse<String> response = null;
-//        try {
-//            response = client.send(request,
-//                    HttpResponse.BodyHandlers.ofString());
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        JSONObject jsonObject = new JSONObject(response.body());
-//        System.out.println(jsonObject.toString());
-//        //System.out.println(jsonObject.getInt("followers"));
-//        return 12;
-//    }
-
     /**
-     * Метод записывает результат в файл
+     * Method writes to file.
      */
     private void writeToFile() {
         try {
@@ -76,7 +55,7 @@ public class Checker {
     }
 
     /**
-     * Метод преобразовывающий информацию от Токена в вид token:clientId:userId
+     * Method adds result to StringBuilder.
      * @param token
      */
     private void output(String token) {
