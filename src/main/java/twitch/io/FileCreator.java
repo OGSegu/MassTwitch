@@ -17,7 +17,7 @@ public class FileCreator {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            System.out.println("Файл не может быть создан");
+            System.out.println("File can not be created");
         }
         checkFile(file);
         return file;
@@ -28,7 +28,7 @@ public class FileCreator {
         try {
             resultFile.createNewFile();
         } catch (IOException e) {
-            System.out.println("Файл не может быть создан");
+            System.out.println("File can not be found");
         }
         checkFile(resultFile);
         return resultFile;

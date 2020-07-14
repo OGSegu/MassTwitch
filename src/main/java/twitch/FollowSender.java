@@ -26,7 +26,7 @@ public class FollowSender {
                 follow(info[0], info[1], info[2]);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Файл не найден: " + e);
+            System.out.println("File can not be found: " + e);
         }
     }
 

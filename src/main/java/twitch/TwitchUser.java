@@ -162,7 +162,7 @@ public class TwitchUser {
                 if (unfollow(userID)) {
                     System.out.println(k + "/" + total);
                 } else {
-                    System.out.println("failed to unfollowed");
+                    System.out.println("Failed to unfollowed");
                     break;
                 }
                 i++;
@@ -210,6 +210,10 @@ public class TwitchUser {
 
     public int getFollowed() {
         return followed;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 
     @Override
