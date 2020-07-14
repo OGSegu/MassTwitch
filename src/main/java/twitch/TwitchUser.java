@@ -18,8 +18,7 @@ public class TwitchUser {
 
     private String clientID;
     private String userID;
-
-    private int followed;
+    private String login;
 
 
     /**
@@ -34,9 +33,6 @@ public class TwitchUser {
         if (!ignoreInvalid && !this.valid) {
             throw new InvalidAccount("Invalid token : ", token);
         }
-        this.followed = getFollowedAmount();
-        System.out.println(toString());
-        clean(5);
     }
 
     public TwitchUser(String token) throws InvalidAccount {
@@ -45,9 +41,6 @@ public class TwitchUser {
         if (!this.valid) {
             throw new InvalidAccount("Invalid token : ", token);
         }
-        this.followed = getFollowedAmount();
-        System.out.println(toString());
-        clean(5);
     }
 
     /**
@@ -73,6 +66,7 @@ public class TwitchUser {
         try {
             this.clientID = (String) jsonObject.get("client_id");
             this.userID = (String) jsonObject.get("user_id");
+            this.login = (String) jsonObject.get("login");
         } catch (JSONException e) {
             return false;
         }
@@ -80,11 +74,11 @@ public class TwitchUser {
     }
 
     /**
-     * Method gets amount of followings.
+     * Method gets amount of followed.
      *
-     * @return - amount of followings
+     * @return - amount of followed.
      */
-    public int getFollowedAmount() {
+    public int getFollowed() {
         if (!valid) return -1;
         JSONObject jsonObject = getFollowedJSON();
         int result;
@@ -115,7 +109,7 @@ public class TwitchUser {
     }
 
     public boolean canFollow() {
-        return followed < 2000;
+        return getFollowed() < 2000;
     }
 
     public void cleanAll() {
@@ -145,7 +139,7 @@ public class TwitchUser {
         }
     }
 
-    private void clean(int amount) {
+    public void clean(int amount) {
         if (!valid) return;
         try {
             JSONObject jsonObject = getFollowedJSON();
@@ -172,7 +166,7 @@ public class TwitchUser {
         }
     }
 
-    private boolean unfollow(String channelID) {
+    public boolean unfollow(String channelID) {
         if (!valid) return false;
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -192,8 +186,9 @@ public class TwitchUser {
         return Objects.requireNonNull(response).body().isEmpty();
     }
 
-    public void setFollowed(int followed) {
-        this.followed = followed;
+
+    public String getLogin() {
+        return login;
     }
 
     public String getToken() {
@@ -208,10 +203,6 @@ public class TwitchUser {
         return userID;
     }
 
-    public int getFollowed() {
-        return followed;
-    }
-
     public boolean isValid() {
         return valid;
     }
@@ -219,11 +210,11 @@ public class TwitchUser {
     @Override
     public String toString() {
         return "TwitchUser{" +
-                "valid='" + valid + '\'' +
-                ", token=" + token +
+                "token='" + token + '\'' +
+                ", valid=" + valid +
                 ", clientID='" + clientID + '\'' +
                 ", userID='" + userID + '\'' +
-                ", followed=" + followed +
+                ", login='" + login + '\'' +
                 '}';
     }
 }

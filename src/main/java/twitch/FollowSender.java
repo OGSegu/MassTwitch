@@ -1,5 +1,6 @@
 package twitch;
 
+import twitch.exception.InvalidAccount;
 import twitch.io.FileCreator;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class FollowSender {
@@ -20,24 +22,28 @@ public class FollowSender {
     }
 
     public void start() {
-        try (Scanner sc = new Scanner(FileCreator.resultFile, "UTF-8")) {
+        try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
             while (sc.hasNext()) {
-                String[] info = sc.next().split(":");
-                follow(info[0], info[1], info[2]);
+                TwitchUser user = new TwitchUser(sc.next(), true);
+                if (user.isValid()) {
+                    follow(user);
+                }
             }
         } catch (FileNotFoundException e) {
             System.out.println("File can not be found: " + e);
+        } catch (InvalidAccount e) {
+            System.out.println("Invalid token : " + e);
         }
     }
 
 
-    private boolean follow(String token, String clientId, String userId) {
+    private boolean follow(TwitchUser user) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .PUT(HttpRequest.BodyPublishers.noBody())
-                .uri(URI.create("https://api.twitch.tv/kraken/users/" + userId + "/follows/channels/" + channelID))
-                .setHeader("Authorization", " OAuth " + token)
-                .setHeader("Client-ID", clientId)
+                .uri(URI.create("https://api.twitch.tv/kraken/users/" + user.getUserID() + "/follows/channels/" + channelID))
+                .setHeader("Authorization", " OAuth " + user.getToken())
+                .setHeader("Client-ID", user.getClientID())
                 .setHeader("Accept", "application/vnd.twitchtv.v5+json")
                 .build();
         HttpResponse<String> response = null;
@@ -47,11 +53,11 @@ public class FollowSender {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        if (response.body().contains("Unprocessable Entity")) {
-            System.out.println(response.body());
+        if (!Objects.requireNonNull(response).body().contains("channel")) {
+            System.out.println(user.getLogin() + " failed to follow. Followed: " + user.getFollowed());
             return false;
         }
-        System.out.println(userId + ": followed");
+        System.out.println(user.getLogin() + ": followed");
         return true;
     }
 
@@ -69,7 +75,7 @@ public class FollowSender {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        JSONObject jsonObject = new JSONObject(response.body());
+        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
         JSONArray userInfo = jsonObject.getJSONArray("users");
         long channelId = 0;
         for (int i = 0; i < userInfo.length(); i++) {
