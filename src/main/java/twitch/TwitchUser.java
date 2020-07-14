@@ -35,7 +35,8 @@ public class TwitchUser {
             throw new InvalidAccount("Invalid token : ", token);
         }
         this.followed = getFollowedAmount();
-        cleanAll();
+        System.out.println(toString());
+        clean(5);
     }
 
     public TwitchUser(String token) throws InvalidAccount {
@@ -45,7 +46,8 @@ public class TwitchUser {
             throw new InvalidAccount("Invalid token : ", token);
         }
         this.followed = getFollowedAmount();
-        cleanAll();
+        System.out.println(toString());
+        clean(5);
     }
 
     /**
@@ -82,22 +84,9 @@ public class TwitchUser {
      *
      * @return - amount of followings
      */
-    private int getFollowedAmount() {
+    public int getFollowedAmount() {
         if (!valid) return -1;
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.twitch.tv/helix/users/follows?from_id=" + userID))
-                .setHeader("Authorization", " Bearer " + token)
-                .setHeader("Client-ID", clientID)
-                .build();
-        HttpResponse<String> response = null;
-        try {
-            response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
+        JSONObject jsonObject = getFollowedJSON();
         int result;
         try {
             result = jsonObject.getInt("total");
@@ -108,12 +97,7 @@ public class TwitchUser {
         return result;
     }
 
-    public boolean canFollow() {
-        return followed < 2000;
-    }
-
-    public void cleanAll() {
-        if (!valid) return;
+    private JSONObject getFollowedJSON() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitch.tv/helix/users/follows?from_id=" + userID))
@@ -127,22 +111,61 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        return new JSONObject(Objects.requireNonNull(response).body());
+    }
+
+    public boolean canFollow() {
+        return followed < 2000;
+    }
+
+    public void cleanAll() {
+        if (!valid) return;
         try {
-            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
-            if (jsonObject.getInt("total") == 0) return;
+            JSONObject jsonObject = getFollowedJSON();
+            int total = jsonObject.getInt("total");
+            if (total == 0) return;
             JSONArray data = jsonObject.getJSONArray("data");
-            System.out.println();
-            for (int i = 0; i < data.length(); i++) {
+            int i = 0;
+            for (int k = 0; k < total; k++) {
+                if (i == data.length() - 1) {
+                    data = getFollowedJSON().getJSONArray("data");
+                    i = 0;
+                }
                 String userID = data.getJSONObject(i).getString("to_id");
                 if (unfollow(userID)) {
-                    System.out.println("unfollowed");
+                    System.out.println(k + "/" + total);
                 } else {
                     System.out.println("failed to unfollowed");
                     break;
                 }
+                i++;
             }
-            if (getFollowedAmount() > 0) {
-                cleanAll();
+        } catch (JSONException e) {
+            System.out.println("Can't parse JSON");
+        }
+    }
+
+    private void clean(int amount) {
+        if (!valid) return;
+        try {
+            JSONObject jsonObject = getFollowedJSON();
+            int total = jsonObject.getInt("total");
+            if (total == 0) return;
+            JSONArray data = jsonObject.getJSONArray("data");
+            int i = 0;
+            for (int k = 0; k < amount; k++) {
+                if (i == data.length() - 1) {
+                    data = getFollowedJSON().getJSONArray("data");
+                    i = 0;
+                }
+                String userID = data.getJSONObject(i).getString("to_id");
+                if (unfollow(userID)) {
+                    System.out.println(k + "/" + total);
+                } else {
+                    System.out.println("failed to unfollowed");
+                    break;
+                }
+                i++;
             }
         } catch (JSONException e) {
             System.out.println("Can't parse JSON");
@@ -169,8 +192,8 @@ public class TwitchUser {
         return Objects.requireNonNull(response).body().isEmpty();
     }
 
-    private void clean(int amount) {
-
+    public void setFollowed(int followed) {
+        this.followed = followed;
     }
 
     public String getToken() {

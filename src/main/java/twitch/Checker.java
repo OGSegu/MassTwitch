@@ -29,7 +29,6 @@ public class Checker {
             while (sc.hasNext()) {
                 String token = sc.next();
                 TwitchUser user = new TwitchUser(token, true);
-                System.out.println(user.toString());
                 output(token);
             }
         } catch (FileNotFoundException e) {
