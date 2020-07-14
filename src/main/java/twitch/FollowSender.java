@@ -16,13 +16,16 @@ import java.util.Scanner;
 
 public class FollowSender {
     private final long channelID;
+    private final int amount;
 
     /**
      * Constructor of FollowSender
      * @param channelName - name of the channel which will be followed.
+     * @param amount - amount of follows
      */
-    public FollowSender(String channelName) {
+    public FollowSender(String channelName, int amount) {
         this.channelID = getChannelID(channelName);
+        this.amount = amount;
     }
 
     /**
@@ -30,11 +33,14 @@ public class FollowSender {
      */
     public void start() {
         try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
-            while (sc.hasNext()) {
+            int i = 0;
+            while (i < amount) {
                 TwitchUser user = new TwitchUser(sc.next(), true);
-                if (user.isValid()) {
-                    follow(user);
+                if (!user.isValid()) {
+                    continue;
                 }
+                follow(user);
+                i++;
             }
         } catch (FileNotFoundException e) {
             System.out.println("File can not be found: " + e);
