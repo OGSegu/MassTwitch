@@ -39,7 +39,9 @@ public class FollowSender {
                 if (!user.isValid()) {
                     continue;
                 }
-                follow(user);
+                if (!follow(user)) {
+                    continue;
+                }
                 i++;
             }
         } catch (FileNotFoundException e) {
