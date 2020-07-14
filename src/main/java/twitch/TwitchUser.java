@@ -130,10 +130,9 @@ public class TwitchUser {
     public boolean isFollowedTo(String channelID) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.twitch.tv/kraken/users/" + getUserID() + "/follows/channels/" + channelID + "/follows/channels/"))
-                .setHeader("Authorization", " OAuth " + getToken())
+                .uri(URI.create("https://api.twitch.tv/helix/users/follows?from_id=" + userID + "&to_id=" + channelID))
+                .setHeader("Authorization", " Bearer " + getToken())
                 .setHeader("Client-ID", getClientID())
-                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
                 .build();
         HttpResponse<String> response = null;
         try {
@@ -142,7 +141,7 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return Objects.requireNonNull(response).body().contains("is not following");
+        return Objects.requireNonNull(response).statusCode() == 200;
     }
 
     /**
