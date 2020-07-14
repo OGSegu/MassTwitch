@@ -91,6 +91,10 @@ public class TwitchUser {
         return result;
     }
 
+    /**
+     * Get JSON of followed API result.
+     * @return JSONObject after API request.
+     */
     private JSONObject getFollowedJSON() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -108,10 +112,17 @@ public class TwitchUser {
         return new JSONObject(Objects.requireNonNull(response).body());
     }
 
+    /**
+     * Check if TwitchUser can follow
+     * @return true - if can follow
+     */
     public boolean canFollow() {
         return getFollowed() < 2000;
     }
 
+    /**
+     * Unfollow from all users
+     */
     public void cleanAll() {
         if (!valid) return;
         try {
@@ -139,6 +150,10 @@ public class TwitchUser {
         }
     }
 
+    /**
+     * Unfollow from specific amount of users
+     * @param amount - amount to unfollow
+     */
     public void clean(int amount) {
         if (!valid) return;
         try {
@@ -166,6 +181,11 @@ public class TwitchUser {
         }
     }
 
+    /**
+     * Unfollow from specific user
+     * @param channelID - channelID of this user
+     * @return true - successful
+     */
     public boolean unfollow(String channelID) {
         if (!valid) return false;
         HttpClient client = HttpClient.newHttpClient();

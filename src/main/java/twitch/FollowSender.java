@@ -17,10 +17,17 @@ import java.util.Scanner;
 public class FollowSender {
     private final long channelID;
 
+    /**
+     * Constructor of FollowSender
+     * @param channelName - name of the channel which will be followed.
+     */
     public FollowSender(String channelName) {
         this.channelID = getChannelID(channelName);
     }
 
+    /**
+     * The method starts sending follows.
+     */
     public void start() {
         try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
             while (sc.hasNext()) {
@@ -36,7 +43,11 @@ public class FollowSender {
         }
     }
 
-
+    /**
+     * The method that make a follow.
+     * @param user - TwitchUser object
+     * @return - true if successful
+     */
     private boolean follow(TwitchUser user) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -61,6 +72,11 @@ public class FollowSender {
         return true;
     }
 
+    /**
+     * Gets channelID by it's name
+     * @param channelName - channel name
+     * @return - channelID
+     */
     private long getChannelID(String channelName) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
