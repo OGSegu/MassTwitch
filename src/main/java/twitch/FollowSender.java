@@ -1,9 +1,6 @@
 package twitch;
 
-import twitch.exception.InvalidAccount;
 import twitch.io.FileCreator;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,7 +12,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class FollowSender {
-    private final String channelID;
+    private final String channelName;
     private final int amount;
 
     /**
@@ -24,7 +21,7 @@ public class FollowSender {
      * @param amount - amount of follows
      */
     public FollowSender(String channelName, int amount) {
-        this.channelID = getChannelID(channelName);
+        this.channelName = channelName;
         this.amount = amount;
     }
 
@@ -35,81 +32,20 @@ public class FollowSender {
         try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
             int i = 0;
             while (i < amount) {
-                TwitchUser user = new TwitchUser(sc.next(), true);
+                TwitchUser user = new TwitchUser(sc.next());
                 if (!user.isValid()) {
                     continue;
                 }
-                if (!follow(user)) {
+                if (!user.follow(channelName)) {
                     continue;
                 }
                 i++;
             }
         } catch (FileNotFoundException e) {
             System.out.println("File can not be found: " + e);
-        } catch (InvalidAccount e) {
-            System.out.println("Invalid token : " + e);
         }
     }
 
-    /**
-     * The method that make a follow.
-     * @param user - TwitchUser object
-     * @return - true if successful
-     */
-    private boolean follow(TwitchUser user) {
-        if (user.isFollowedTo(channelID)) {
-            System.out.println(user.getLogin() + " is already followed. Skipped.");
-            return false;
-        }
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .PUT(HttpRequest.BodyPublishers.noBody())
-                .uri(URI.create("https://api.twitch.tv/kraken/users/" + user.getUserID() + "/follows/channels/" + channelID))
-                .setHeader("Authorization", " OAuth " + user.getToken())
-                .setHeader("Client-ID", user.getClientID())
-                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
-                .build();
-        HttpResponse<String> response = null;
-        try {
-            response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (!Objects.requireNonNull(response).body().contains("channel")) {
-            System.out.println(user.getLogin() + " failed to follow. Followed: " + user.getFollowed());
-            return false;
-        }
-        System.out.println(user.getLogin() + ": followed");
-        return true;
-    }
 
-    /**
-     * Gets channelID by it's name
-     * @param channelName - channel name
-     * @return - channelID
-     */
-    private String getChannelID(String channelName) {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.twitch.tv/kraken/users?login=" + channelName))
-                .setHeader("Client-ID", "kimne78kx3ncx6brgo4mv6wki5h1ko")
-                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
-                .build();
-        HttpResponse<String> response = null;
-        try {
-            response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
-        JSONArray userInfo = jsonObject.getJSONArray("users");
-        String channelId = null;
-        for (int i = 0; i < userInfo.length(); i++) {
-            JSONObject info = userInfo.getJSONObject(i);
-            channelId = info.getString("_id");
-        }
-        return channelId;
-    }
+
 }

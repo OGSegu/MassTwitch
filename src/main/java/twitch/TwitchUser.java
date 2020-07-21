@@ -3,7 +3,6 @@ package twitch;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import twitch.exception.InvalidAccount;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,22 +24,10 @@ public class TwitchUser {
      * Constructor of Twitch.TwitchUser class
      *
      * @param token
-     * @param ignoreInvalid true - ignore invalid accounts
      */
-    public TwitchUser(String token, boolean ignoreInvalid) throws InvalidAccount {
+    public TwitchUser(String token) {
         this.token = token;
         this.valid = getTokenInformation(token);
-        if (!ignoreInvalid && !this.valid) {
-            throw new InvalidAccount("Invalid token : ", token);
-        }
-    }
-
-    public TwitchUser(String token) throws InvalidAccount {
-        this.token = token;
-        this.valid = getTokenInformation(token);
-        if (!this.valid) {
-            throw new InvalidAccount("Invalid token : ", token);
-        }
     }
 
     /**
@@ -141,7 +128,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return Objects.requireNonNull(response).statusCode() == 200;
+        int count = new JSONObject(Objects.requireNonNull(response).body()).getInt("total");
+        return count > 0;
     }
 
     /**
@@ -164,7 +152,7 @@ public class TwitchUser {
                 if (unfollow(userID)) {
                     System.out.println(k + "/" + total);
                 } else {
-                    System.out.println("failed to unfollowed");
+                    System.out.println("Failed to unfollowed");
                     break;
                 }
                 i++;
@@ -209,15 +197,16 @@ public class TwitchUser {
     /**
      * Unfollow from specific user
      *
-     * @param channelID - channelID of this user
+     * @param name - name of the channel
      * @return true - successful
      */
-    public boolean unfollow(String channelID) {
+    public boolean unfollow(String name) {
         if (!valid) return false;
+        String channelName = Utils.getChannelID(name);
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .DELETE()
-                .uri(URI.create("https://api.twitch.tv/kraken/users/" + userID + "/follows/channels/" + channelID))
+                .uri(URI.create("https://api.twitch.tv/kraken/users/" + userID + "/follows/channels/" + channelName))
                 .setHeader("Authorization", " OAuth " + token)
                 .setHeader("Client-ID", clientID)
                 .setHeader("Accept", "application/vnd.twitchtv.v5+json")
@@ -230,6 +219,41 @@ public class TwitchUser {
             e.printStackTrace();
         }
         return Objects.requireNonNull(response).body().isEmpty();
+    }
+
+    /**
+     * The method that make a follow.
+     * @param name - channel name
+     * @return - true if successful
+     */
+
+    public boolean follow(String name) {
+        String channelID = Utils.getChannelID(name);
+        if (isFollowedTo(channelID)) {
+            System.out.println(getLogin() + " is already followed. Skipped.");
+            return false;
+        }
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .PUT(HttpRequest.BodyPublishers.noBody())
+                .uri(URI.create("https://api.twitch.tv/kraken/users/" + getUserID() + "/follows/channels/" + channelID))
+                .setHeader("Authorization", " OAuth " + getToken())
+                .setHeader("Client-ID", getClientID())
+                .setHeader("Accept", "application/vnd.twitchtv.v5+json")
+                .build();
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (!Objects.requireNonNull(response).body().contains("channel")) {
+            System.out.println(getLogin() + " failed to follow. Followed: " + getFollowed());
+            return false;
+        }
+        System.out.println(getLogin() + ": followed");
+        return true;
     }
 
 

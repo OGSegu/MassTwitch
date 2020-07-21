@@ -28,15 +28,13 @@ public class Checker {
         try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
             while (sc.hasNext()) {
                 String token = sc.next();
-                TwitchUser user = new TwitchUser(token, true);
+                TwitchUser user = new TwitchUser(token);
                 if (user.isValid()) {
                     output(token);
                 }
             }
         } catch (FileNotFoundException e) {
             System.out.println("File not found " + e);
-        } catch (InvalidAccount e) {
-            System.out.println("Invalid token: " + e);
         }
         fileWriter.flush();
     }

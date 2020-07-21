@@ -70,7 +70,7 @@ public class FileCreator {
      */
     private static void checkFile(File file) {
         if (!file.exists() || !file.isFile() || !file.getAbsolutePath().endsWith(".txt")) {
-            throw new IllegalArgumentException("Неверный файл.");
+            throw new IllegalArgumentException("Wrong file");
         }
     }
 }
