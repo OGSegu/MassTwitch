@@ -25,7 +25,7 @@ public class TwitchUser {
      *
      * @param token
      */
-    public TwitchUser(String token) {
+    public TwitchUser(final String token) {
         this.token = token;
         this.valid = getTokenInformation(token);
     }
@@ -227,10 +227,10 @@ public class TwitchUser {
      * @return - true if successful
      */
 
-    public boolean follow(String name) {
+    public  boolean follow(String name) {
         String channelID = Utils.getChannelID(name);
         if (isFollowedTo(channelID)) {
-            System.out.println(getLogin() + " is already followed. Skipped.");
+            System.out.println(getLogin() + " is already followed. Skipped. " + Thread.currentThread().getName());
             return false;
         }
         HttpClient client = HttpClient.newHttpClient();
