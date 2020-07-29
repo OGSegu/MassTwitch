@@ -1,6 +1,7 @@
 package twitch;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class Utils {
 
     /**
      * Gets channelID by it's name
+     *
      * @param channelName - channel name
      * @return - channelID
      */
@@ -41,6 +43,13 @@ public class Utils {
             JSONObject info = userInfo.getJSONObject(i);
             channelId = info.getString("_id");
         }
+        if (channelId == null) {
+            return "Not Found";
+        }
         return channelId;
+    }
+
+    public static boolean channelExists(String channel) {
+        return !getChannelID(channel).equals("Not Found");
     }
 }

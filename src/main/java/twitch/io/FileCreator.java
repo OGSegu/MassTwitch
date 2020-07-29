@@ -19,9 +19,13 @@ public class FileCreator {
      * Creates custom files
      * @param tokensFile - name of token file
      */
-    public static void create(String tokensFile) {
+    public static boolean create(String tokensFile) {
         file = getCustomFile(tokensFile);
+        if (file.toString().isEmpty()) {
+            return false;
+        }
         resultFile = getResultFile();
+        return true;
     }
 
     /**
@@ -35,7 +39,10 @@ public class FileCreator {
         } catch (IOException e) {
             System.out.println("File can not be created");
         }
-        checkFile(file);
+        boolean result = checkFile(file);
+        if (!result) {
+            return new File("");
+        }
         return file;
     }
     /**
@@ -45,7 +52,10 @@ public class FileCreator {
      */
     private static File getCustomFile(String tokensFile) {
         File file = new File(tokensFile);
-        checkFile(file);
+        boolean result = checkFile(file);
+        if (!result) {
+            return new File("");
+        }
         return file;
     }
 
@@ -68,9 +78,7 @@ public class FileCreator {
      * Check if file exists, .txt and not directory
      * @param file - this file
      */
-    private static void checkFile(File file) {
-        if (!file.exists() || !file.isFile() || !file.getAbsolutePath().endsWith(".txt")) {
-            throw new IllegalArgumentException("Wrong file");
-        }
+    private static boolean checkFile(File file) {
+        return file.exists() && file.isFile() && file.getAbsolutePath().endsWith(".txt");
     }
 }

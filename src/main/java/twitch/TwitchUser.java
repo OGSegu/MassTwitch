@@ -23,9 +23,9 @@ public class TwitchUser {
     /**
      * Constructor of Twitch.TwitchUser class
      *
-     * @param token
+     * @param token - token
      */
-    public TwitchUser(final String token) {
+    public TwitchUser(String token) {
         this.token = token;
         this.valid = getTokenInformation(token);
     }
@@ -33,7 +33,7 @@ public class TwitchUser {
     /**
      * The Method that receives user's clientID and userID
      *
-     * @param token
+     * @param token - token
      * @return true - successful, false - failed
      */
     private boolean getTokenInformation(String token) {
@@ -111,6 +111,7 @@ public class TwitchUser {
 
     /**
      * Check if user is followed to "channelID"
+     *
      * @param channelID - channel to check
      * @return true - if followed
      */
@@ -221,13 +222,15 @@ public class TwitchUser {
         return Objects.requireNonNull(response).body().isEmpty();
     }
 
+
     /**
      * The method that make a follow.
+     *
      * @param name - channel name
      * @return - true if successful
      */
 
-    public  boolean follow(String name) {
+    public boolean follow(String name) {
         String channelID = Utils.getChannelID(name);
         if (isFollowedTo(channelID)) {
             System.out.println(getLogin() + " is already followed. Skipped. " + Thread.currentThread().getName());

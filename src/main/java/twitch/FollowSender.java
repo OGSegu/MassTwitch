@@ -4,7 +4,6 @@ import twitch.io.FileCreator;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,7 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FollowSender {
     private final String channelName;
     private final int amount;
-    private final List<String> followers = Collections.synchronizedList(new ArrayList<>());
+    private final int threads;
+    private final List<String> followers = new ArrayList<>();
 
     /**
      * Constructor of FollowSender
@@ -23,9 +23,10 @@ public class FollowSender {
      * @param channelName - name of the channel which will be followed.
      * @param amount      - amount of follows
      */
-    public FollowSender(String channelName, int amount) {
+    public FollowSender(String channelName, int amount, int threads) {
         this.channelName = channelName;
         this.amount = amount;
+        this.threads = threads;
     }
 
     /**
@@ -39,7 +40,14 @@ public class FollowSender {
         } catch (FileNotFoundException e) {
             System.out.println("File can not be found: " + e);
         }
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(100, 200, 4L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.CallerRunsPolicy());
+        startExecution();
+    }
+
+    /**
+     * Starts execution of Threads.
+     */
+    private void startExecution() {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 4L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(50), new ThreadPoolExecutor.CallerRunsPolicy());
         AtomicInteger subscribed = new AtomicInteger(0);
         AtomicInteger i = new AtomicInteger(-1);
         long startTime = 0;
@@ -61,8 +69,8 @@ public class FollowSender {
                     }
                     return;
                 }
-                executor.remove(this::start);
                 i.getAndIncrement();
+                executor.remove(this::start);
                 TwitchUser user = new TwitchUser(followers.get(i.get()));
                 if (!user.isValid()) {
                     return;
@@ -72,13 +80,9 @@ public class FollowSender {
                 }
                 subscribed.getAndIncrement();
             });
-
-            if (subscribed.get() >= amount) {
-                break;
-            }
         }
-        System.out.println("DONE");
         long endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime-startTime) + "ms");
+        System.out.println("Total execution time: " + (endTime - startTime) + "ms");
+        System.out.println("DONE");
     }
 }
