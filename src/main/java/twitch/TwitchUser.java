@@ -219,7 +219,10 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return Objects.requireNonNull(response).body().isEmpty();
+        int statusCode = Objects.requireNonNull(response).statusCode();
+        if (statusCode != 204) return false;
+        System.out.println(name + ": unfollowed");
+        return true;
     }
 
 

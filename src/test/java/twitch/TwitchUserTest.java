@@ -7,26 +7,38 @@ import static org.junit.jupiter.api.Assertions.*;
 class TwitchUserTest {
     private final TwitchUser twitchUser = new TwitchUser(Utils.TEST_TOKEN);
 
+    private final String VALID_CHANNEL = "realsegu";
+    private final String INVALID_CHANNEL = "randomchannel_lmao";
+
     @Test
-    @Order(1)
     void getFollowed() {
         assertEquals(1, twitchUser.getFollowed());
     }
 
     @Test
-    @Order(2)
-    void unfollow() throws InterruptedException {
-        twitchUser.unfollow("realsegu");
-        Thread.sleep(60_000);
-        assertEquals(0, twitchUser.getFollowed());
+    void actions() throws InterruptedException {
+        if (twitchUser.isFollowedTo(Utils.getChannelID("realsegu"))) {
+            unfollow();
+            assertEquals(0, twitchUser.getFollowed());
+            follow();
+            assertEquals(1, twitchUser.getFollowed());
+        } else {
+            follow();
+            assertEquals(1, twitchUser.getFollowed());
+            unfollow();
+            assertEquals(0, twitchUser.getFollowed());
+        }
     }
 
-    @Test
-    @Order(3)
+    void unfollow() throws InterruptedException {
+        twitchUser.unfollow(VALID_CHANNEL);
+        Thread.sleep(60_000);
+    }
+
+
     void follow() throws InterruptedException {
         twitchUser.follow("realsegu");
         Thread.sleep(60_000);
-        assertEquals(1, twitchUser.getFollowed());
     }
 
     @Test
