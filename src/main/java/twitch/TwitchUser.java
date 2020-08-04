@@ -181,7 +181,7 @@ public class TwitchUser {
                     data = getFollowedJSON().getJSONArray("data");
                     i = 0;
                 }
-                String userID = data.getJSONObject(i).getString("to_id");
+                String userID = data.getJSONObject(i).getString("to_name");
                 if (unfollow(userID)) {
                     System.out.println(k + "/" + total);
                 } else {

@@ -67,7 +67,7 @@ public class Main {
             System.out.println("! WRONG AMOUNT ! TRY AGAIN");
             chooseAmount();
         }
-        return threads;
+        return amount;
     }
 
     private static int chooseThreads() {

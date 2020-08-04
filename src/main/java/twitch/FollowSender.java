@@ -47,30 +47,22 @@ public class FollowSender {
      * Starts execution of Threads.
      */
     private void startExecution() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 4L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(50), new ThreadPoolExecutor.CallerRunsPolicy());
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 100, 4L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.CallerRunsPolicy());
         AtomicInteger subscribed = new AtomicInteger(0);
         AtomicInteger i = new AtomicInteger(-1);
-        long startTime = 0;
-        boolean getTime = false;
         while (i.get() < followers.size()) {
-            if (!getTime && subscribed.get() > 1) {
-                startTime = System.currentTimeMillis();
-                getTime = true;
+            if (subscribed.get() >= amount) {
+                executor.shutdown();
+                executor.shutdownNow();
+                break;
             }
             executor.execute(() -> {
-                if (subscribed.get() >= amount) {
-                    executor.shutdown();
-                    try {
-                        if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                            executor.shutdownNow();
-                        }
-                    } catch (InterruptedException e) {
-                        executor.shutdownNow();
-                    }
-                    return;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                i.getAndIncrement();
-                executor.remove(this::start);
+                i.incrementAndGet();
                 TwitchUser user = new TwitchUser(followers.get(i.get()));
                 if (!user.isValid()) {
                     return;
@@ -78,11 +70,10 @@ public class FollowSender {
                 if (!user.follow(channelName)) {
                     return;
                 }
-                subscribed.getAndIncrement();
+                subscribed.incrementAndGet();
+                System.out.println(subscribed.get());
             });
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime) + "ms");
         System.out.println("DONE");
     }
 }
