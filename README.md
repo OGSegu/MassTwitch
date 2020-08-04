@@ -1,4 +1,4 @@
-# [Twitch](https://twitch.tv) Library
+# Mass[Twitch](https://twitch.tv)
 
 This tool allows you to manipulate with huge amount of accounts.
 
