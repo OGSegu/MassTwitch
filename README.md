@@ -1,6 +1,6 @@
-# [Twitch](https://twitch.tv) Follow Bot
+# [Twitch](https://twitch.tv) Library
 
-This tool allows you to manipulate with follows in accounts using tokens.
+This tool allows you to manipulate with huge amount of accounts.
 
 # Requirements
 
