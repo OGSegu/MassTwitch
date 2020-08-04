@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +47,7 @@ public class FollowSender {
      * Starts execution of Threads.
      */
     private void startExecution() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 100, 4L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.CallerRunsPolicy());
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 3L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadPoolExecutor.CallerRunsPolicy());
         AtomicInteger subscribed = new AtomicInteger(0);
         AtomicInteger i = new AtomicInteger(-1);
         while (i.get() < followers.size()) {
@@ -57,21 +57,14 @@ public class FollowSender {
                 break;
             }
             executor.execute(() -> {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i.incrementAndGet();
-                TwitchUser user = new TwitchUser(followers.get(i.get()));
+                TwitchUser user = new TwitchUser(followers.get(i.incrementAndGet()));
                 if (!user.isValid()) {
                     return;
                 }
                 if (!user.follow(channelName)) {
                     return;
                 }
-                subscribed.incrementAndGet();
-                System.out.println(subscribed.get());
+                System.out.println(subscribed.incrementAndGet() + " / " + amount);
             });
         }
         System.out.println("DONE");
