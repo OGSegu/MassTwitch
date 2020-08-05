@@ -1,8 +1,8 @@
 package twitch;
 
-import twitch.io.FileCreator;
-
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -11,7 +11,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FollowSender {
+public class FollowSender extends Checkable {
+
     private final String channelName;
     private final int amount;
     private final int threads;
@@ -23,7 +24,8 @@ public class FollowSender {
      * @param channelName - name of the channel which will be followed.
      * @param amount      - amount of follows
      */
-    public FollowSender(String channelName, int amount, int threads) {
+    public FollowSender(File in, String channelName, int amount, int threads) throws IOException {
+        super(in);
         this.channelName = channelName;
         this.amount = amount;
         this.threads = threads;
@@ -33,7 +35,7 @@ public class FollowSender {
      * The method starts sending follows.
      */
     public void start() {
-        try (Scanner sc = new Scanner(FileCreator.file, "UTF-8")) {
+        try (Scanner sc = new Scanner(super.fileIn, "UTF-8")) {
             while (sc.hasNext()) {
                 followers.add(sc.next());
             }
