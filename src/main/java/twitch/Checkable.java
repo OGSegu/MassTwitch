@@ -3,8 +3,18 @@ package twitch;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Checkable {
+
+    final ThreadPoolExecutor executor = new ThreadPoolExecutor(0,
+            Runtime.getRuntime().availableProcessors() - 1,
+            4L,
+            TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     final File fileIn;
     final File fileOut;
@@ -41,14 +51,6 @@ public abstract class Checkable {
 
     public static boolean validFile(File file) {
         return (!file.exists() || !file.isFile() || !file.getAbsolutePath().endsWith(".txt"));
-    }
-
-    File getFileIn() {
-        return fileIn;
-    }
-
-    File getFileOut() {
-        return fileOut;
     }
 
 }

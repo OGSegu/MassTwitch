@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,27 +44,28 @@ public class FollowSender extends Checkable {
      * Starts execution of Threads.
      */
     private void startExecution() {
-        int maxThreadCount = Runtime.getRuntime().availableProcessors();
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, maxThreadCount - 1, 4L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadPoolExecutor.CallerRunsPolicy());
         AtomicInteger subscribed = new AtomicInteger(0);
         AtomicInteger i = new AtomicInteger(-1);
-        while (i.get() < followers.size()) {
-            if (subscribed.get() >= amount) {
-                executor.shutdown();
-                executor.shutdownNow();
-                break;
-            }
-            executor.execute(() -> {
-                TwitchUser user = new TwitchUser(followers.get(i.incrementAndGet()));
-                if (!user.isValid()) {
-                    return;
+        while (!super.executor.isShutdown()) {
+            super.executor.execute(() -> {
+                if (subscribed.get() >= amount) {
+                    super.executor.shutdown();
+                    try {
+                        super.executor.awaitTermination(3, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    TwitchUser user = new TwitchUser(followers.get(i.incrementAndGet()));
+                    if (!user.isValid()) {
+                        return;
+                    }
+                    if (!user.follow(channelName)) {
+                        return;
+                    }
+                    System.out.println(subscribed.incrementAndGet() + " / " + amount);
                 }
-                if (!user.follow(channelName)) {
-                    return;
-                }
-                System.out.println(subscribed.incrementAndGet() + " / " + amount);
             });
         }
-        System.out.println("DONE");
     }
 }
