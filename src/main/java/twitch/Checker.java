@@ -22,7 +22,7 @@ public class Checker extends Checkable {
     }
 
     /**
-     * The Method runs checker.
+     * The method runs checker.
      *
      * @throws IOException - when creation of FileWriter is failed
      */
@@ -41,6 +41,17 @@ public class Checker extends Checkable {
         fileWriter.flush();
     }
 
+    /**
+     * Method output result.
+     *
+     * @param token - token
+     */
+    private void output(String token) {
+        System.out.println(token + " - VALID");
+        sbResult.append(token)
+                .append("\n");
+        writeToFile();
+    }
 
     /**
      * Method writes to file.
@@ -53,18 +64,6 @@ public class Checker extends Checkable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Method adds result to StringBuilder.
-     *
-     * @param token - token
-     */
-    private void output(String token) {
-        System.out.println(token + " - VALID");
-        sbResult.append(token)
-                .append("\n");
-        writeToFile();
     }
 
 }

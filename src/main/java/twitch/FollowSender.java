@@ -15,7 +15,6 @@ public class FollowSender extends Checkable {
 
     private final String channelName;
     private final int amount;
-    private final int threads;
     private final List<String> followers = new ArrayList<>();
 
     /**
@@ -24,11 +23,10 @@ public class FollowSender extends Checkable {
      * @param channelName - name of the channel which will be followed.
      * @param amount      - amount of follows
      */
-    public FollowSender(File in, String channelName, int amount, int threads) throws IOException {
+    public FollowSender(File in, String channelName, int amount) {
         super(in);
         this.channelName = channelName;
         this.amount = amount;
-        this.threads = threads;
     }
 
     /**
@@ -49,7 +47,8 @@ public class FollowSender extends Checkable {
      * Starts execution of Threads.
      */
     private void startExecution() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 3L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadPoolExecutor.CallerRunsPolicy());
+        int maxThreadCount = Runtime.getRuntime().availableProcessors();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, maxThreadCount - 1, 4L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadPoolExecutor.CallerRunsPolicy());
         AtomicInteger subscribed = new AtomicInteger(0);
         AtomicInteger i = new AtomicInteger(-1);
         while (i.get() < followers.size()) {
