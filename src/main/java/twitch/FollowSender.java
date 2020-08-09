@@ -67,6 +67,5 @@ public class FollowSender extends Checkable {
                 System.out.println(subscribed.incrementAndGet() + " / " + amount);
             });
         }
-        System.out.println("DONE");
     }
 }
