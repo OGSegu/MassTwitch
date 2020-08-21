@@ -2,9 +2,8 @@ package twitch;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,7 +11,7 @@ public class FollowSender extends Checkable {
 
     private final String channelName;
     private final int amount;
-    private final List<String> followers = new ArrayList<>();
+    private final List<String> followers = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Constructor of FollowSender
@@ -44,9 +43,9 @@ public class FollowSender extends Checkable {
      * Starts execution of Threads.
      */
     private void startExecution() {
+        Set<String> tokenSet = new HashSet<>();
         AtomicInteger subscribed = new AtomicInteger(0);
-        AtomicInteger i = new AtomicInteger(-1);
-        while (!super.executor.isShutdown()) {
+        while (!super.executor.isTerminated()) {
             super.executor.execute(() -> {
                 if (subscribed.get() >= amount) {
                     super.executor.shutdown();
@@ -56,13 +55,16 @@ public class FollowSender extends Checkable {
                         e.printStackTrace();
                     }
                 } else {
-                    TwitchUser user = new TwitchUser(followers.get(i.incrementAndGet()));
+                    String token = followers.get(ThreadLocalRandom.current().nextInt(0, followers.size()));
+                    if (tokenSet.contains(token)) return;
+                    TwitchUser user = new TwitchUser(token);
                     if (!user.isValid()) {
                         return;
                     }
                     if (!user.follow(channelName)) {
                         return;
                     }
+                    tokenSet.add(token);
                     System.out.println(subscribed.incrementAndGet() + " / " + amount);
                 }
             });

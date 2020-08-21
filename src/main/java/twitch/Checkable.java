@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class Checkable {
 
     final ThreadPoolExecutor executor = new ThreadPoolExecutor(0,
-            Runtime.getRuntime().availableProcessors() - 1,
+            150,
             4L,
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),

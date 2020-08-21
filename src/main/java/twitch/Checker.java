@@ -4,17 +4,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Checker extends Checkable {
 
-    private final StringBuilder sbResult = new StringBuilder();
     private final FileWriter fileWriter;
-    private final List<String> tokensList = new ArrayList<>();
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(10000);
 
     /**
      * Constructor of Checker class
@@ -50,24 +48,27 @@ public class Checker extends Checkable {
         AtomicInteger i = new AtomicInteger(0);
         int amount = tokensList.size();
         AtomicInteger validAmount = new AtomicInteger();
-        while (!super.executor.isShutdown()) {
+        while (!super.executor.isTerminated()) {
             super.executor.execute(() -> {
-                if (i.get() >= amount - 1) {
+                if (i.get() >= amount - 1 || tokensList.peek() == null) {
                     super.executor.shutdown();
                     try {
-                        super.executor.awaitTermination(3, TimeUnit.SECONDS);
+                        if (!super.executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                            super.executor.shutdownNow();
+                        }
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        super.executor.shutdownNow();
                     }
                 } else {
-                    TwitchUser user = new TwitchUser(tokensList.get(i.incrementAndGet()));
+                    String token = tokensList.poll();
+                    TwitchUser user = new TwitchUser(token);
                     if (!user.isValid()) {
                         System.out.println(String.format("%s - !INVALID!", user.getToken()));
                         return;
                     }
+                    writeToFile(user.getToken());
                     System.out.println(String.format("%s - VALID", user.getToken()));
                     validAmount.getAndIncrement();
-                    outputToken(user.getToken());
                 }
             });
         }
@@ -75,24 +76,12 @@ public class Checker extends Checkable {
     }
 
     /**
-     * Method output result
-     *
-     * @param token - token
-     */
-    private void outputToken(String token) {
-        sbResult.append(token)
-                .append("\n");
-        writeToFile();
-    }
-
-    /**
      * Method writes to file
      */
-    private void writeToFile() {
+    private void writeToFile(String output) {
         try {
-            fileWriter.write(sbResult.toString());
+            fileWriter.write(output + "\n");
             fileWriter.flush();
-            sbResult.setLength(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
