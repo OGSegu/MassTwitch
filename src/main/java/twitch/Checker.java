@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Checker extends Checkable {
 
     private final FileWriter fileWriter;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(10000);
+    private final Queue<String> tokensQueue = new ArrayBlockingQueue<>(10000);
 
     /**
      * Constructor of Checker class
@@ -32,7 +32,7 @@ public class Checker extends Checkable {
     public void start() throws IOException {
         try (Scanner sc = new Scanner(super.fileIn, "UTF-8")) {
             while (sc.hasNext()) {
-                tokensList.add(sc.next());
+                tokensQueue.add(sc.next());
             }
         } catch (FileNotFoundException e) {
             System.out.println("File not found " + e);
@@ -46,11 +46,11 @@ public class Checker extends Checkable {
      */
     private void startExecution() {
         AtomicInteger i = new AtomicInteger(0);
-        int amount = tokensList.size();
+        int amount = tokensQueue.size();
         AtomicInteger validAmount = new AtomicInteger();
         while (!super.executor.isTerminated()) {
             super.executor.execute(() -> {
-                if (i.get() >= amount - 1 || tokensList.peek() == null) {
+                if (i.get() >= amount - 1 || tokensQueue.peek() == null) {
                     super.executor.shutdown();
                     try {
                         if (!super.executor.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -60,7 +60,7 @@ public class Checker extends Checkable {
                         super.executor.shutdownNow();
                     }
                 } else {
-                    String token = tokensList.poll();
+                    String token = tokensQueue.poll();
                     TwitchUser user = new TwitchUser(token);
                     if (!user.isValid()) {
                         System.out.println(String.format("%s - !INVALID!", user.getToken()));

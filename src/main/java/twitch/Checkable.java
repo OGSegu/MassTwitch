@@ -15,7 +15,6 @@ public abstract class Checkable {
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
             new ThreadPoolExecutor.CallerRunsPolicy());
-
     final File fileIn;
     final File fileOut;
 
