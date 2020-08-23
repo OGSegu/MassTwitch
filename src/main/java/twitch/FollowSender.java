@@ -3,6 +3,7 @@ package twitch;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,7 +12,7 @@ public class FollowSender extends Checkable {
 
     private final String channelName;
     private final int amount;
-    private final List<String> followers = Collections.synchronizedList(new ArrayList<>());
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(10000);
 
     /**
      * Constructor of FollowSender
@@ -31,7 +32,7 @@ public class FollowSender extends Checkable {
     public void start() {
         try (Scanner sc = new Scanner(super.fileIn, "UTF-8")) {
             while (sc.hasNext()) {
-                followers.add(sc.next());
+                tokensList.add(sc.next());
             }
         } catch (FileNotFoundException e) {
             System.out.println("File can not be found: " + e);
@@ -43,20 +44,20 @@ public class FollowSender extends Checkable {
      * Starts execution of Threads.
      */
     private void startExecution() {
-        Set<String> tokenSet = new HashSet<>();
         AtomicInteger subscribed = new AtomicInteger(0);
         while (!super.executor.isTerminated()) {
             super.executor.execute(() -> {
-                if (subscribed.get() >= amount) {
+                if (subscribed.get() >= amount || tokensList.peek() == null) {
                     super.executor.shutdown();
                     try {
-                        super.executor.awaitTermination(3, TimeUnit.SECONDS);
+                        if (!super.executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                            super.executor.shutdownNow();
+                        }
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        super.executor.shutdownNow();
                     }
                 } else {
-                    String token = followers.get(ThreadLocalRandom.current().nextInt(0, followers.size()));
-                    if (tokenSet.contains(token)) return;
+                    String token = tokensList.poll();
                     TwitchUser user = new TwitchUser(token);
                     if (!user.isValid()) {
                         return;
@@ -64,7 +65,6 @@ public class FollowSender extends Checkable {
                     if (!user.follow(channelName)) {
                         return;
                     }
-                    tokenSet.add(token);
                     System.out.println(subscribed.incrementAndGet() + " / " + amount);
                 }
             });
