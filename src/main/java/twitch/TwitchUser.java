@@ -149,11 +149,8 @@ public class TwitchUser {
                     data = getFollowedJSON().getJSONArray("data");
                     i = 0;
                 }
-                String userID = data.getJSONObject(i).getString("to_id");
-                if (unfollow(userID)) {
-                    System.out.println(k + "/" + total);
-                } else {
-                    System.out.println("Failed to unfollowed");
+                String userID = data.getJSONObject(i).getString("to_name");
+                if (!unfollow(userID)) {
                     break;
                 }
                 i++;
@@ -177,17 +174,12 @@ public class TwitchUser {
             JSONArray data = jsonObject.getJSONArray("data");
             int i = 0;
             for (int k = 0; k < amount; k++) {
-                if (i == data.length() - 1) {
-                    data = getFollowedJSON().getJSONArray("data");
-                    i = 0;
-                }
+                    if (i == data.length() - 1) {
+                        data = getFollowedJSON().getJSONArray("data");
+                        i = 0;
+                    }
                 String userID = data.getJSONObject(i).getString("to_name");
-                if (unfollow(userID)) {
-                    System.out.println(k + "/" + total);
-                } else {
-                    System.out.println("Failed to unfollowed");
-                    break;
-                }
+                unfollow(userID);
                 i++;
             }
         } catch (JSONException e) {
@@ -220,9 +212,7 @@ public class TwitchUser {
             e.printStackTrace();
         }
         int statusCode = Objects.requireNonNull(response).statusCode();
-        if (statusCode != 204) return false;
-        System.out.println(name + ": unfollowed");
-        return true;
+        return statusCode == 204;
     }
 
 

@@ -45,14 +45,11 @@ class TwitchUserTest {
         assertFalse(twitchUser.isFollowedTo(Utils.getChannelID("LIRIK")));
     }
 
-    @Disabled
     @Test
     void cleanAll() throws InterruptedException {
-        if (twitchUser.getFollowed() == 0) {
-            twitchUser.follow("realsegu");
-            Thread.sleep(60_000);
-        }
-        twitchUser.cleanAll();
+        TwitchUser testTwitchUser = new TwitchUser("votul7rq92xa0og3s2wiroz7ikx4zh");
+        System.out.println(testTwitchUser.getFollowed());
+        testTwitchUser.cleanAll();
         Thread.sleep(60_000);
         assertEquals(0, twitchUser.getFollowed());
     }

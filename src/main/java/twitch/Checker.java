@@ -11,16 +11,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Checker extends Checkable {
 
+    /**
+     * action
+     * 0 - checker
+     * 1 - cleaner
+     */
+
+    private final int action;
     private final FileWriter fileWriter;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(10000);
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(60000);
 
     /**
      * Constructor of Checker class
      *
      * @throws IOException - when creation of FileWriter is failed
      */
-    public Checker(File in) throws IOException {
+    public Checker(File in, int action) throws IOException {
         super(in, "valid.txt");
+        this.action = action;
         fileWriter = new FileWriter(super.fileOut, false);
     }
 
@@ -38,7 +46,10 @@ public class Checker extends Checkable {
             System.out.println("File not found " + e);
         }
         fileWriter.flush();
-        startExecution();
+        if (action == 0)
+            startExecution();
+        else if (action == 1)
+            startCleaning();
     }
 
     /**
@@ -75,6 +86,35 @@ public class Checker extends Checkable {
         outputResult(validAmount.get(), amount);
     }
 
+    private void startCleaning() {
+        AtomicInteger i = new AtomicInteger(0);
+        int amount = tokensList.size();
+        AtomicInteger accountNumber = new AtomicInteger(1);
+        while (!super.executor.isTerminated()) {
+            super.executor.execute(() -> {
+                if (i.get() >= amount - 1 || tokensList.peek() == null) {
+                    super.executor.shutdown();
+                    try {
+                        if (!super.executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                            super.executor.shutdownNow();
+                        }
+                    } catch (InterruptedException e) {
+                        super.executor.shutdownNow();
+                    }
+                } else {
+                    String token = tokensList.poll();
+                    System.out.println(accountNumber + ". " +token);
+                    TwitchUser user = new TwitchUser(token);
+                    user.clean(100);
+                    if (!user.isValid()) {
+                        return;
+                    }
+                    accountNumber.getAndIncrement();
+                }
+            });
+        }
+    }
+
     /**
      * Method writes to file
      */
@@ -89,7 +129,8 @@ public class Checker extends Checkable {
 
     /**
      * The method outputs result in format - valid / amount
-     * @param valid - amount of valid tokens
+     *
+     * @param valid  - amount of valid tokens
      * @param amount - amount of tokens
      */
     private void outputResult(int valid, int amount) {
