@@ -19,7 +19,7 @@ public class Checker extends Checkable {
 
     private final int action;
     private final FileWriter fileWriter;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(60000);
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(70000);
 
     /**
      * Constructor of Checker class
@@ -77,6 +77,9 @@ public class Checker extends Checkable {
                         System.out.println(String.format("%s - !INVALID!", user.getToken()));
                         return;
                     }
+                    if (!user.canFollow()) { // TEMPORARY
+                        return;
+                    }
                     writeToFile(user.getToken());
                     System.out.println(String.format("%s - VALID", user.getToken()));
                     validAmount.getAndIncrement();
@@ -105,7 +108,7 @@ public class Checker extends Checkable {
                     String token = tokensList.poll();
                     System.out.println(accountNumber + ". " +token);
                     TwitchUser user = new TwitchUser(token);
-                    user.clean(100);
+                    user.clean(20);
                     if (!user.isValid()) {
                         return;
                     }

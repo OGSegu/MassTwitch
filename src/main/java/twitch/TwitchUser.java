@@ -49,7 +49,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
+        if (response == null) return false;
+        JSONObject jsonObject = new JSONObject(response.body());
         try {
             this.clientID = (String) jsonObject.get("client_id");
             this.userID = (String) jsonObject.get("user_id");
@@ -129,7 +130,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        int count = new JSONObject(Objects.requireNonNull(response).body()).getInt("total");
+        if (response == null) return false;
+        int count = new JSONObject(response.body()).getInt("total");
         return count > 0;
     }
 
@@ -211,7 +213,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        int statusCode = Objects.requireNonNull(response).statusCode();
+        if (response == null) return false;
+        int statusCode = response.statusCode();
         return statusCode == 204;
     }
 
@@ -244,7 +247,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        if (!Objects.requireNonNull(response).body().contains("channel")) {
+        if (response == null) return false;
+        if (!response.body().contains("channel")) {
             System.out.println(getLogin() + " failed to follow. Followed: " + getFollowed());
             return false;
         }

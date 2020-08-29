@@ -37,7 +37,8 @@ public class Utils {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response).body());
+        if (response == null) return "";
+        JSONObject jsonObject = new JSONObject(response.body());
         JSONArray userInfo = jsonObject.getJSONArray("users");
         if (userInfo.isEmpty()) return "Unknown";
         JSONObject info = userInfo.getJSONObject(0);
