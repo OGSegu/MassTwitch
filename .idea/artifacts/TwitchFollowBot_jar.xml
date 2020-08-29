@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="MassTwitch:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/MassTwitch_jar</output-path>
+  <artifact type="jar" name="TwitchFollowBot:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TwitchFollowBot_jar</output-path>
     <root id="archive" name="TwitchFollowBot.jar">
       <element id="module-output" name="TwitchFollowBot" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/json/json/20200518/json-20200518.jar" path-in-jar="/" />
