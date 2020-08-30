@@ -17,7 +17,6 @@ public class Checker extends Checkable {
      * 1 - cleaner
      */
 
-    private final int action;
     private final FileWriter fileWriter;
     private final Queue<String> tokensList = new ArrayBlockingQueue<>(70000);
 
@@ -26,9 +25,8 @@ public class Checker extends Checkable {
      *
      * @throws IOException - when creation of FileWriter is failed
      */
-    public Checker(File in, int action) throws IOException {
+    public Checker(File in) throws IOException {
         super(in, "valid.txt");
-        this.action = action;
         fileWriter = new FileWriter(super.fileOut, false);
     }
 
@@ -46,10 +44,7 @@ public class Checker extends Checkable {
             System.out.println("File not found " + e);
         }
         fileWriter.flush();
-        if (action == 0)
-            startExecution();
-        else if (action == 1)
-            startCleaning();
+        startExecution();
     }
 
     /**
@@ -77,45 +72,17 @@ public class Checker extends Checkable {
                         System.out.println(String.format("%s - !INVALID!", user.getToken()));
                         return;
                     }
-                    if (!user.canFollow()) { // TEMPORARY
-                        return;
+                    if (user.getFollowed() > 1990) {
+                        user.clean(30);
+                        System.out.println(String.format("%s WAS CLEANED", user.getLogin()));
                     }
                     writeToFile(user.getToken());
-                    System.out.println(String.format("%s - VALID", user.getToken()));
                     validAmount.getAndIncrement();
+                    Thread.currentThread().interrupt();
                 }
             });
         }
         outputResult(validAmount.get(), amount);
-    }
-
-    private void startCleaning() {
-        AtomicInteger i = new AtomicInteger(0);
-        int amount = tokensList.size();
-        AtomicInteger accountNumber = new AtomicInteger(1);
-        while (!super.executor.isTerminated()) {
-            super.executor.execute(() -> {
-                if (i.get() >= amount - 1 || tokensList.peek() == null) {
-                    super.executor.shutdown();
-                    try {
-                        if (!super.executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                            super.executor.shutdownNow();
-                        }
-                    } catch (InterruptedException e) {
-                        super.executor.shutdownNow();
-                    }
-                } else {
-                    String token = tokensList.poll();
-                    System.out.println(accountNumber + ". " +token);
-                    TwitchUser user = new TwitchUser(token);
-                    user.clean(20);
-                    if (!user.isValid()) {
-                        return;
-                    }
-                    accountNumber.getAndIncrement();
-                }
-            });
-        }
     }
 
     /**

@@ -98,7 +98,8 @@ public class TwitchUser {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return new JSONObject(Objects.requireNonNull(response).body());
+        if (response == null) return new JSONObject();
+        return new JSONObject(response.body());
     }
 
     /**
@@ -181,7 +182,8 @@ public class TwitchUser {
                         i = 0;
                     }
                 String userID = data.getJSONObject(i).getString("to_name");
-                unfollow(userID);
+                if (unfollow(userID))
+                    System.out.println(getLogin() + ": unfollowed | " + k + "/" + amount);
                 i++;
             }
         } catch (JSONException e) {

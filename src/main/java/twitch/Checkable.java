@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class Checkable {
 
     final ThreadPoolExecutor executor = new ThreadPoolExecutor(0,
-            500,
+            Integer.parseInt(Config.properties.getProperty("threads")),
             4L,
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
@@ -36,7 +36,7 @@ public abstract class Checkable {
 
     private static File createFile(String fileName, boolean createFile) {
         File resultFile = new File(fileName);
-        if (validFile(resultFile)) {
+        if (invalidFile(resultFile)) {
             try {
                 if (!createFile) {
                     throw new FileNotFoundException();
@@ -49,7 +49,7 @@ public abstract class Checkable {
         return resultFile;
     }
 
-    public static boolean validFile(File file) {
+    public static boolean invalidFile(File file) {
         return (!file.exists() || !file.isFile() || !file.getAbsolutePath().endsWith(".txt"));
     }
 

@@ -1,7 +1,4 @@
-import twitch.Checkable;
-import twitch.Utils;
-import twitch.Checker;
-import twitch.FollowSender;
+import twitch.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,52 +6,29 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static Checker checker;
-    private static FollowSender followSender;
-    private static Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
 
+    private static String mode;
     private static File tokenFile;
-    private static String channel;
-    private static int amount;
 
     public static void main(String[] args) throws IOException {
-        checkArguments(args);
+        Config.loadConfig();
+        tokenFile = new File(Config.properties.getProperty("token_file"));
+        mode = Config.properties.getProperty("mode");
+        selectOptions();
     }
 
 
-    private static void checkArguments(String[] args) throws IOException {
-        if (args.length > 1) {
-            throw new IllegalArgumentException("Wrong arguments");
+    private static void selectOptions() throws IOException {
+        if (mode.equals("follow")) {
+            String channel = chooseChannel();
+            int amount = chooseAmount();
+            FollowSender followSender = new FollowSender(tokenFile, channel, amount);
+            followSender.start();
+        } else if (mode.equals("checker")) {
+            Checker checker = new Checker(tokenFile);
+            checker.start();
         }
-        switch (args[0].toLowerCase()) {
-            case "follow":
-                tokenFile = chooseTokenFile();
-                channel = chooseChannel();
-                amount = chooseAmount();
-                followSender = new FollowSender(tokenFile, channel, amount);
-                followSender.start();
-                break;
-            case "check":
-                tokenFile = chooseTokenFile();
-                checker = new Checker(tokenFile, 0);
-                checker.start();
-                break;
-            case "clean":
-                tokenFile = chooseTokenFile();
-                checker = new Checker(tokenFile, 1);
-                checker.start();
-                break;
-        }
-    }
-
-    private static File chooseTokenFile() {
-        System.out.print("Token file: ");
-        File file = new File(scanner.nextLine());
-        if (Checkable.validFile(file)) {
-            System.out.println("! WRONG FILE ! TRY AGAIN");
-            chooseTokenFile();
-        }
-        return file;
     }
 
     private static String chooseChannel() {
@@ -62,7 +36,7 @@ public class Main {
         String channel = scanner.nextLine();
         if (!Utils.channelExists(channel)) {
             System.out.println("! WRONG CHANNEL ! TRY AGAIN");
-            chooseChannel();
+            return chooseChannel();
         }
         return channel;
     }
@@ -72,7 +46,7 @@ public class Main {
         int amount = scanner.nextInt();
         if (amount > 10000 || amount < 1) {
             System.out.println("! WRONG AMOUNT ! TRY AGAIN");
-            chooseAmount();
+            return chooseAmount();
         }
         return amount;
     }
