@@ -78,7 +78,6 @@ public class Checker extends Checkable {
                     }
                     writeToFile(user.getToken());
                     validAmount.getAndIncrement();
-                    Thread.currentThread().interrupt();
                 }
             });
         }

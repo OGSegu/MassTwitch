@@ -37,14 +37,13 @@ public class TwitchUser {
      * @return true - successful, false - failed
      */
     private boolean getTokenInformation(String token) {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://id.twitch.tv/oauth2/validate"))
                 .setHeader("Authorization", " Bearer " + token)
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = client.send(request,
+            response = Utils.client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -85,7 +84,6 @@ public class TwitchUser {
      * @return JSONObject after API request.
      */
     private JSONObject getFollowedJSON() {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitch.tv/helix/users/follows?from_id=" + userID))
                 .setHeader("Authorization", " Bearer " + token)
@@ -93,7 +91,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = client.send(request,
+            response = Utils.client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -118,7 +116,6 @@ public class TwitchUser {
      * @return true - if followed
      */
     public boolean isFollowedTo(String channelID) {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitch.tv/helix/users/follows?from_id=" + userID + "&to_id=" + channelID))
                 .setHeader("Authorization", " Bearer " + getToken())
@@ -126,7 +123,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = client.send(request,
+            response = Utils.client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -200,7 +197,6 @@ public class TwitchUser {
     public boolean unfollow(String name) {
         if (!valid) return false;
         String channelName = Utils.getChannelID(name);
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(URI.create("https://api.twitch.tv/kraken/users/" + userID + "/follows/channels/" + channelName))
@@ -210,7 +206,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = client.send(request,
+            response = Utils.client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -234,7 +230,6 @@ public class TwitchUser {
             System.out.println(getLogin() + " is already followed. Skipped. " + Thread.currentThread().getName());
             return false;
         }
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .uri(URI.create("https://api.twitch.tv/kraken/users/" + getUserID() + "/follows/channels/" + channelID))
@@ -244,7 +239,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = client.send(request,
+            response = Utils.client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

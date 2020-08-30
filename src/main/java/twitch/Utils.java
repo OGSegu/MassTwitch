@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public class Utils {
 
+    public static final HttpClient client = HttpClient.newHttpClient();
     public static final String TEST_TOKEN = "w4hit48w391fs1bcoxq7o6svldy11s";
     public static final String TEST_CLIENTID = "gp762nuuoqcoxypju8c569th9wz7q5";
 
@@ -24,7 +25,6 @@ public class Utils {
      * @return - channelID
      */
     public static String getChannelID(String channelName) {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitch.tv/kraken/users?login=" + channelName))
                 .setHeader("Client-ID", TEST_CLIENTID)
