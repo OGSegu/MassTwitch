@@ -12,15 +12,13 @@ public class Config {
         loadConfig();
     }
 
-    public static boolean loadConfig() {
+    public static void loadConfig() {
         FileInputStream in;
         try {
             in = new FileInputStream("config.properties");
             properties.load(in);
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
-        return true;
     }
 }

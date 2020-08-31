@@ -25,8 +25,8 @@ public class Checker extends Checkable {
      *
      * @throws IOException - when creation of FileWriter is failed
      */
-    public Checker(File in) throws IOException {
-        super(in, "valid.txt");
+    public Checker(File in, int threads) throws IOException {
+        super(in, "valid.txt", threads);
         fileWriter = new FileWriter(super.fileOut, false);
     }
 

@@ -12,7 +12,7 @@ public class FollowSender extends Checkable {
 
     private final String channelName;
     private final int amount;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(60000);
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(70000);
 
     /**
      * Constructor of FollowSender
@@ -20,8 +20,8 @@ public class FollowSender extends Checkable {
      * @param channelName - name of the channel which will be followed.
      * @param amount      - amount of follows
      */
-    public FollowSender(File in, String channelName, int amount) {
-        super(in);
+    public FollowSender(File in, String channelName, int amount, int threads) {
+        super(in, threads);
         this.channelName = channelName;
         this.amount = amount;
     }

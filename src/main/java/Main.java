@@ -13,8 +13,6 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Config.loadConfig();
-        tokenFile = new File(Config.properties.getProperty("token_file"));
-        mode = Config.properties.getProperty("mode");
         selectOptions();
     }
 
@@ -23,10 +21,12 @@ public class Main {
         if (mode.equals("follow")) {
             String channel = chooseChannel();
             int amount = chooseAmount();
-            FollowSender followSender = new FollowSender(tokenFile, channel, amount);
+            int threads = chooseThreads();
+            FollowSender followSender = new FollowSender(tokenFile, channel, amount, threads);
             followSender.start();
         } else if (mode.equals("checker")) {
-            Checker checker = new Checker(tokenFile);
+            int threads = chooseThreads();
+            Checker checker = new Checker(tokenFile, threads);
             checker.start();
         }
     }
@@ -49,5 +49,15 @@ public class Main {
             return chooseAmount();
         }
         return amount;
+    }
+
+    private static int chooseThreads() {
+        System.out.print("Amount of threads (1 < amount < 1000): ");
+        int threads = scanner.nextInt();
+        if (threads > 1000 || threads < 1) {
+            System.out.println("! WRONG AMOUNT ! TRY AGAIN");
+            return chooseThreads();
+        }
+        return threads;
     }
 }

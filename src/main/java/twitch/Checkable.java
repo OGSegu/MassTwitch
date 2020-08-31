@@ -9,29 +9,42 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class Checkable {
 
-    final ThreadPoolExecutor executor = new ThreadPoolExecutor(0,
-            Integer.parseInt(Config.properties.getProperty("threads")),
-            4L,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
-            new ThreadPoolExecutor.CallerRunsPolicy());
+    final ThreadPoolExecutor executor;
 
     final File fileIn;
     final File fileOut;
 
-    Checkable(String fileNameIn, String fileNameOut) {
+    Checkable(String fileNameIn, String fileNameOut, int threads) {
         this.fileIn = createFile(fileNameIn, false);
         this.fileOut = createFile(fileNameOut, true);
+        executor = new ThreadPoolExecutor(0,
+                threads,
+                4L,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    Checkable(File fileIn, String fileNameOut) {
+    Checkable(File fileIn, String fileNameOut, int threads) {
         this.fileIn = fileIn;
         this.fileOut = createFile(fileNameOut, true);
+        executor = new ThreadPoolExecutor(0,
+                threads,
+                4L,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    Checkable(File fileIn) {
+    Checkable(File fileIn, int threads) {
         this.fileIn = fileIn;
         this.fileOut = new File("");
+        executor = new ThreadPoolExecutor(0,
+                threads,
+                4L,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     private static File createFile(String fileName, boolean createFile) {
