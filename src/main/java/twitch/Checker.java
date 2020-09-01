@@ -69,12 +69,15 @@ public class Checker extends Checkable {
                     String token = tokensList.poll();
                     TwitchUser user = new TwitchUser(token);
                     if (!user.isValid()) {
-                        System.out.println(String.format("%s - !INVALID!", user.getToken()));
+                        System.out.printf("%s - !INVALID!%n", user.getToken());
                         return;
                     }
-                    if (user.getFollowed() > 1990) {
-                        user.clean(30);
-                        System.out.println(String.format("%s WAS CLEANED", user.getLogin()));
+                    int followed = user.getFollowed();
+                    System.out.println(user.getLogin() + " have got " + followed);
+                    if (followed > 1990) {
+                        System.out.println(user.getLogin() + " CLEANING");
+                        user.clean(100);
+                        System.out.printf("%s WAS CLEANED%n", user.getLogin());
                     }
                     writeToFile(user.getToken());
                     validAmount.getAndIncrement();

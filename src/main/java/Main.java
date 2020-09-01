@@ -8,9 +8,6 @@ public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    private static String mode;
-    private static File tokenFile;
-
     public static void main(String[] args) throws IOException {
         Config.loadConfig();
         selectOptions();
@@ -18,15 +15,13 @@ public class Main {
 
 
     private static void selectOptions() throws IOException {
-        if (mode.equals("follow")) {
+        if (Config.mode.equals("follow")) {
             String channel = chooseChannel();
             int amount = chooseAmount();
-            int threads = chooseThreads();
-            FollowSender followSender = new FollowSender(tokenFile, channel, amount, threads);
+            FollowSender followSender = new FollowSender(Config.token_file, channel, amount, Config.threads);
             followSender.start();
-        } else if (mode.equals("checker")) {
-            int threads = chooseThreads();
-            Checker checker = new Checker(tokenFile, threads);
+        } else if (Config.mode.equals("checker")) {
+            Checker checker = new Checker(Config.token_file, Config.threads);
             checker.start();
         }
     }
@@ -51,13 +46,4 @@ public class Main {
         return amount;
     }
 
-    private static int chooseThreads() {
-        System.out.print("Amount of threads (1 < amount < 1000): ");
-        int threads = scanner.nextInt();
-        if (threads > 1000 || threads < 1) {
-            System.out.println("! WRONG AMOUNT ! TRY AGAIN");
-            return chooseThreads();
-        }
-        return threads;
-    }
 }

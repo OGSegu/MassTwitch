@@ -9,9 +9,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Objects;
 
 public class TwitchUser {
+    public final HttpClient client = HttpClient.newHttpClient();
     private final String token;
     private final boolean valid;
 
@@ -43,7 +43,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = Utils.client.send(request,
+            response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -91,7 +91,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = Utils.client.send(request,
+            response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -123,7 +123,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = Utils.client.send(request,
+            response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -165,19 +165,19 @@ public class TwitchUser {
      *
      * @param amount - amount to unfollow
      */
-    public void clean(int amount) {
-        if (!valid) return;
+    public boolean clean(int amount) {
+        if (!valid) return false;
         try {
             JSONObject jsonObject = getFollowedJSON();
             int total = jsonObject.getInt("total");
-            if (total == 0) return;
+            if (total == 0) return true;
             JSONArray data = jsonObject.getJSONArray("data");
             int i = 0;
             for (int k = 0; k < amount; k++) {
-                    if (i == data.length() - 1) {
-                        data = getFollowedJSON().getJSONArray("data");
-                        i = 0;
-                    }
+                if (i == data.length() - 1) {
+                    data = getFollowedJSON().getJSONArray("data");
+                    i = 0;
+                }
                 String userID = data.getJSONObject(i).getString("to_name");
                 if (unfollow(userID))
                     System.out.println(getLogin() + ": unfollowed | " + k + "/" + amount);
@@ -185,7 +185,9 @@ public class TwitchUser {
             }
         } catch (JSONException e) {
             System.out.println("Can't parse JSON");
+            return false;
         }
+        return true;
     }
 
     /**
@@ -206,7 +208,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = Utils.client.send(request,
+            response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -239,7 +241,7 @@ public class TwitchUser {
                 .build();
         HttpResponse<String> response = null;
         try {
-            response = Utils.client.send(request,
+            response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
