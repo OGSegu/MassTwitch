@@ -12,7 +12,7 @@ public class FollowSender extends Checkable {
 
     private final String channelName;
     private final int amount;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(70000);
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(100000);
 
     /**
      * Constructor of FollowSender

@@ -18,7 +18,7 @@ public class Checker extends Checkable {
      */
 
     private final FileWriter fileWriter;
-    private final Queue<String> tokensList = new ArrayBlockingQueue<>(70000);
+    private final Queue<String> tokensList = new ArrayBlockingQueue<>(100000);
 
     /**
      * Constructor of Checker class
